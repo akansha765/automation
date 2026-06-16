@@ -74,3 +74,13 @@ python scripts/run-demo-automation.py
 ```
 
 The dry-run reads `sample-data/leads.json`, filters out businesses that already have websites, generates demo JSON, renders a one-page HTML preview, writes an outreach email preview, and stores a manifest in `generated/demo-run/`.
+
+## Create a Desktop Runner
+
+Create an executable folder on the desktop with the dry-run script, sample leads, and a one-command launcher:
+
+```bash
+./scripts/install-desktop-runner.sh
+```
+
+The installer creates `~/Desktop/local-business-demo-automation/` and marks both the folder launcher and Python runner as executable.
