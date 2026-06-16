@@ -1,0 +1,20 @@
+[
+  {
+    "businessName": "Example Bakery",
+    "category": "Bakery",
+    "phone": "+15551234567",
+    "email": "owner@example.com",
+    "address": "123 Main St, Austin, TX",
+    "googleMapsUrl": "https://maps.google.com/?q=Example+Bakery+Austin",
+    "website": ""
+  },
+  {
+    "businessName": "Already Online Plumbing",
+    "category": "Plumber",
+    "phone": "+15557654321",
+    "email": "hello@alreadyonline.example",
+    "address": "500 Pipe Rd, Austin, TX",
+    "googleMapsUrl": "https://maps.google.com/?q=Already+Online+Plumbing",
+    "website": "https://alreadyonline.example"
+  }
+]

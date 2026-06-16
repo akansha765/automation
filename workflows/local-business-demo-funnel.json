@@ -1,0 +1,165 @@
+{
+  "name": "Local Business Demo Funnel",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "outscraper-business-without-website",
+        "httpMethod": "POST",
+        "responseMode": "lastNode"
+      },
+      "id": "outscraper-webhook",
+      "name": "Outscraper Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.website || ''}}",
+              "operation": "isEmpty"
+            }
+          ]
+        }
+      },
+      "id": "filter-no-website",
+      "name": "Filter Businesses Without Websites",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "predefinedCredentialType",
+        "sendBody": true,
+        "jsonBody": "={\n  \"model\": \"claude-sonnet-4-20250514\",\n  \"max_tokens\": 1200,\n  \"messages\": [{\n    \"role\": \"user\",\n    \"content\": \"Research this business from the supplied listing and return grounded JSON content for a one-page demo website: \" + JSON.stringify($json)\n  }]\n}"
+      },
+      "id": "claude-research-agent",
+      "name": "Claude Research Agent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [460, -80]
+    },
+    {
+      "parameters": {
+        "jsCode": "const lead = $input.first().json;\nconst content = lead.content?.[0]?.text ? JSON.parse(lead.content[0].text) : lead;\nreturn [{ json: { ...content, generatedAt: new Date().toISOString() } }];"
+      },
+      "id": "generate-json-content",
+      "name": "Generate JSON Content",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [700, -80]
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://api.github.com/repos/{{$env.GITHUB_OWNER}}/{{$env.GITHUB_REPO}}/contents/content/demos/{{$json.slug}}.json",
+        "sendBody": true,
+        "jsonBody": "={\n  \"message\": \"Create demo for \" + $json.businessName,\n  \"content\": Buffer.from(JSON.stringify($json, null, 2)).toString('base64'),\n  \"branch\": \"demo/\" + $json.slug\n}"
+      },
+      "id": "github-template-site",
+      "name": "GitHub Template Site",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [940, -80]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vercel.com/v13/deployments",
+        "sendBody": true,
+        "jsonBody": "={\n  \"name\": $env.VERCEL_PROJECT_ID,\n  \"gitSource\": {\n    \"type\": \"github\",\n    \"repoId\": $env.GITHUB_REPO,\n    \"ref\": \"demo/\" + $json.slug\n  }\n}"
+      },
+      "id": "vercel-deploy",
+      "name": "Vercel Deploy",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1180, -80]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.resend.com/emails",
+        "sendBody": true,
+        "jsonBody": "={\n  \"from\": $env.FROM_EMAIL,\n  \"to\": $json.email,\n  \"subject\": \"I made a quick website demo for \" + $json.businessName,\n  \"html\": \"<p>Hi, I made a quick demo website for your business: <a href='https://\" + $json.url + \"'>View demo</a>.</p><p>Reply if you would like me to polish it and connect your domain.</p><p>Reply stop to opt out.</p>\"\n}"
+      },
+      "id": "resend-email",
+      "name": "Resend Email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1420, -80]
+    },
+    {
+      "parameters": { "amount": 3, "unit": "days" },
+      "id": "wait-three-days",
+      "name": "Wait 3 Days",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [1660, -80]
+    },
+    {
+      "parameters": { "method": "POST", "url": "https://api.resend.com/emails", "sendBody": true },
+      "id": "follow-up-one",
+      "name": "Follow-up #1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1900, -80]
+    },
+    {
+      "parameters": { "amount": 4, "unit": "days" },
+      "id": "wait-four-days",
+      "name": "Wait 4 Days",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [2140, -80]
+    },
+    {
+      "parameters": { "method": "POST", "url": "https://api.resend.com/emails", "sendBody": true },
+      "id": "follow-up-two",
+      "name": "Follow-up #2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2380, -80]
+    },
+    {
+      "parameters": { "amount": 7, "unit": "days" },
+      "id": "wait-seven-days",
+      "name": "Wait 7 Days",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [2620, -80]
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://api.vercel.com/v13/deployments/{{$json.deploymentId}}"
+      },
+      "id": "delete-demo-site",
+      "name": "Delete Demo Site",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2860, -80]
+    }
+  ],
+  "connections": {
+    "Outscraper Webhook": { "main": [[{ "node": "Filter Businesses Without Websites", "type": "main", "index": 0 }]] },
+    "Filter Businesses Without Websites": { "main": [[{ "node": "Claude Research Agent", "type": "main", "index": 0 }]] },
+    "Claude Research Agent": { "main": [[{ "node": "Generate JSON Content", "type": "main", "index": 0 }]] },
+    "Generate JSON Content": { "main": [[{ "node": "GitHub Template Site", "type": "main", "index": 0 }]] },
+    "GitHub Template Site": { "main": [[{ "node": "Vercel Deploy", "type": "main", "index": 0 }]] },
+    "Vercel Deploy": { "main": [[{ "node": "Resend Email", "type": "main", "index": 0 }]] },
+    "Resend Email": { "main": [[{ "node": "Wait 3 Days", "type": "main", "index": 0 }]] },
+    "Wait 3 Days": { "main": [[{ "node": "Follow-up #1", "type": "main", "index": 0 }]] },
+    "Follow-up #1": { "main": [[{ "node": "Wait 4 Days", "type": "main", "index": 0 }]] },
+    "Wait 4 Days": { "main": [[{ "node": "Follow-up #2", "type": "main", "index": 0 }]] },
+    "Follow-up #2": { "main": [[{ "node": "Wait 7 Days", "type": "main", "index": 0 }]] },
+    "Wait 7 Days": { "main": [[{ "node": "Delete Demo Site", "type": "main", "index": 0 }]] }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
