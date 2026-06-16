@@ -1,0 +1,16 @@
+{
+  "generatedAt": "2026-06-16T14:21:41.668045+00:00",
+  "input": "sample-data/leads.json",
+  "generatedCount": 1,
+  "results": [
+    {
+      "slug": "example-bakery-austin",
+      "business_name": "Example Bakery",
+      "demo_url": "https://demo.example.com/example-bakery-austin",
+      "content_path": "generated/demo-run/example-bakery-austin.json",
+      "html_path": "generated/demo-run/example-bakery-austin.html",
+      "email_path": "generated/demo-run/example-bakery-austin.email.txt",
+      "cleanup_at": "2026-06-30T14:21:41.667264+00:00"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "slug": "example-bakery-austin",
+  "businessName": "Example Bakery",
+  "headline": "A modern website demo for Example Bakery",
+  "description": "A simple one-page demo designed to help customers find and contact this bakery in Austin.",
+  "services": [
+    "Fresh pastries",
+    "Custom orders",
+    "Coffee and treats"
+  ],
+  "callToAction": "Call today or request a quote",
+  "contact": {
+    "phone": "+15551234567",
+    "email": "owner@example.com",
+    "address": "123 Main St, Austin, TX",
+    "googleMapsUrl": "https://maps.google.com/?q=Example+Bakery+Austin"
+  },
+  "source": "local dry-run from sample lead data",
+  "generatedAt": "2026-06-16T14:21:41.667238+00:00"
+}
